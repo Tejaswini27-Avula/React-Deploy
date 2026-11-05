@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MARK Hospitals HMS — Live</title>
+<style>
+:root {
+  --bg-base:#0b0f14;--bg-surface:#111720;--bg-card:#161e2a;--bg-card2:#1a2333;--bg-hover:#1f2d3f;
+  --border:rgba(255,255,255,0.07);--border-light:rgba(255,255,255,0.04);
+  --accent:#7c3aed;--accent-dim:rgba(124,58,237,0.12);--accent-glow:rgba(124,58,237,0.28);
+  --gold:#e8a020;--gold-dim:rgba(232,160,32,0.12);
+  --ruby:#e84040;--ruby-dim:rgba(232,64,64,0.12);
+  --sapphire:#4a90d9;--sapphire-dim:rgba(74,144,217,0.12);
+  --violet:#9b5de5;--violet-dim:rgba(155,93,229,0.12);
+  --emerald:#22c55e;--emerald-dim:rgba(34,197,94,0.12);
+  --text-primary:#e8edf3;--text-secondary:#8a97a8;--text-muted:#4e5f72;--text-dim:#2f3e50;
+  --sidebar-w:256px;--header-h:60px;
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;
+  --tr:all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg-base);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 20% 50%,rgba(124,58,237,0.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(74,144,217,0.05) 0%,transparent 50%),var(--bg-base);padding:24px}
+.login-logo{text-align:center;margin-bottom:28px}
+.portal-title{font-size:0.8rem;color:var(--text-muted);text-align:center;margin-bottom:20px;font-weight:500;letter-spacing:0.05em}
+.login-box{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);width:100%;max-width:400px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.lb-head{padding:22px 26px;border-bottom:1px solid var(--border)}
+.lb-head h3{font-family:'DM Serif Display',serif;font-size:1.1rem}
+.lb-head p{font-size:0.73rem;color:var(--text-muted);margin-top:3px}
+.lb-body{padding:22px 26px}
+.lb-foot{padding:16px 26px;border-top:1px solid var(--border);display:flex;gap:10px}
+.btn-login{flex:1;height:40px;background:var(--accent);color:white;border:none;border-radius:var(--r-md);font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:var(--tr)}
+.btn-login:hover{background:#6d28d9;box-shadow:0 0 20px var(--accent-glow)}
+.login-err{color:var(--ruby);font-size:0.75rem;margin-top:6px;display:none}
+#app{display:none;min-height:100vh}
+.app-wrap{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--bg-surface);border-right:1px solid var(--border);height:100vh;position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:200;overflow:hidden}
+.sidebar-header{height:var(--header-h);display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--border);gap:12px}
+.logo-text h1{font-family:'DM Serif Display',serif;font-size:1.05rem}
+.logo-text span{font-size:0.58rem;color:var(--text-muted);letter-spacing:0.12em;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:14px 10px;overflow-y:auto;min-height:0}
+.nav-label{font-size:0.58rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-dim);padding:10px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-md);cursor:pointer;transition:var(--tr);color:var(--text-secondary);font-size:0.86rem;font-weight:400;position:relative;margin-bottom:1px}
+.nav-item:hover{background:var(--bg-hover);color:var(--text-primary)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent);font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:0;top:22%;height:56%;width:3px;background:var(--accent);border-radius:0 2px 2px 0}
+.nav-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-sm);font-size:0.9rem;flex-shrink:0}
+.nav-item.active .nav-icon{background:var(--accent-dim)}
+.nav-badge{margin-left:auto;background:var(--accent);color:white;font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.nav-badge.red{background:var(--ruby)}
+.sidebar-footer{padding:12px 10px;border-top:1px solid var(--border);flex-shrink:0}
+.user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-md)}
+.user-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:white}
+.user-info strong{font-size:0.8rem;color:var(--text-primary);display:block;white-space:nowrap}
+.user-info span{font-size:0.67rem;color:var(--text-muted)}
+.status-dot{width:7px;height:7px;background:var(--emerald);border-radius:50%;flex-shrink:0;margin-left:auto;box-shadow:0 0 6px var(--emerald)}
+.logout-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r-md);cursor:pointer;color:var(--text-muted);font-size:0.78rem;margin-top:6px;transition:var(--tr)}
+.logout-btn:hover{background:var(--ruby-dim);color:var(--ruby)}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.header{height:var(--header-h);background:var(--bg-surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:100}
+.breadcrumb{display:flex;align-items:center;gap:6px}
+.bc-root{font-size:0.7rem;color:var(--text-muted)}
+.bc-sep{color:var(--text-dim);font-size:0.7rem}
+.bc-cur{font-size:0.875rem;font-weight:600}
+.h-right{display:flex;align-items:center;gap:8px}
+.role-chip{background:var(--rc-bg,var(--accent-dim));border:1px solid var(--rc-b,rgba(124,58,237,0.2));border-radius:var(--r-md);padding:0 14px;height:32px;display:flex;align-items:center;font-size:0.72rem;font-weight:700;color:var(--rc-c,var(--accent));letter-spacing:0.06em;text-transform:uppercase}
+.date-chip{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);padding:0 12px;height:32px;display:flex;align-items:center;font-size:0.7rem;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;gap:5px}
+.live-dot{width:5px;height:5px;background:var(--emerald);border-radius:50%;box-shadow:0 0 5px var(--emerald)}
+.icon-btn{width:34px;height:34px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.88rem;color:var(--text-secondary);transition:var(--tr);position:relative}
+.icon-btn:hover{background:var(--bg-hover);color:var(--text-primary)}
+.notif-pip{position:absolute;top:6px;right:6px;width:6px;height:6px;background:var(--ruby);border-radius:50%;border:1.5px solid var(--bg-surface)}
+.content{padding:24px 26px;flex:1}
+.page{display:none}
+.page.active{display:block;animation:pageIn 0.28s cubic-bezier(0.4,0,0.2,1)}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.ptb{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px}
+.ptb h2{font-family:'DM Serif Display',serif;font-size:1.55rem;line-height:1}
+.ptb p{font-size:0.78rem;color:var(--text-muted);margin-top:5px}
+.ptb-a{display:flex;gap:8px}
+.kpi-grid{display:grid;gap:14px;margin-bottom:22px}
+.kpi-grid.six{grid-template-columns:repeat(6,1fr)}
+.kpi-grid.four{grid-template-columns:repeat(4,1fr)}
+.kpi-grid.three{grid-template-columns:repeat(3,1fr)}
+.kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;position:relative;overflow:hidden;transition:var(--tr)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc,var(--accent))}
+.kpi-card:hover{background:var(--bg-hover);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.kpi-icon{width:34px;height:34px;background:var(--kd,var(--accent-dim));border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:0.95rem}
+.kpi-trend{font-size:0.67rem;font-weight:600;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:20px}
+.kpi-trend.up{background:var(--emerald-dim);color:var(--emerald)}
+.kpi-trend.dn{background:var(--ruby-dim);color:var(--ruby)}
+.kpi-trend.fl{background:var(--bg-card2);color:var(--text-muted)}
+.kpi-val{font-family:'DM Serif Display',serif;font-size:1.7rem;line-height:1;margin-bottom:4px}
+.kpi-lbl{font-size:0.7rem;color:var(--text-muted);font-weight:500}
+.panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.ph{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pt{font-size:0.86rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.ptd{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.pa{display:flex;gap:8px;align-items:center}
+.dt{width:100%;border-collapse:collapse}
+.dt thead tr{background:var(--bg-surface)}
+.dt th{padding:10px 16px;text-align:left;font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.dt td{padding:12px 16px;font-size:0.81rem;color:var(--text-secondary);border-bottom:1px solid var(--border-light);vertical-align:middle}
+.dt tr:last-child td{border-bottom:none}
+.dt tbody tr:hover{background:var(--bg-hover)}
+.dt td strong{color:var(--text-primary);font-weight:500}
+.mono{font-family:'JetBrains Mono',monospace;font-size:0.75rem}
+.ar{display:flex;align-items:center;gap:10px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.67rem;font-weight:700;color:white;flex-shrink:0}
+.avi strong{font-size:0.81rem;color:var(--text-primary);display:block}
+.avi span{font-size:0.68rem;color:var(--text-muted)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:0.66rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%}
+.bg{background:var(--emerald-dim);color:var(--emerald)}.bg::before{background:var(--emerald)}
+.br{background:var(--ruby-dim);color:var(--ruby)}.br::before{background:var(--ruby)}
+.by{background:var(--gold-dim);color:var(--gold)}.by::before{background:var(--gold)}
+.bb{background:var(--sapphire-dim);color:var(--sapphire)}.bb::before{background:var(--sapphire)}
+.bt{background:var(--accent-dim);color:var(--accent)}.bt::before{background:var(--accent)}
+.bv{background:var(--violet-dim);color:var(--violet)}.bv::before{background:var(--violet)}
+.bgr{background:var(--bg-card2);color:var(--text-muted)}.bgr::before{background:var(--text-muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:0 14px;height:34px;border-radius:var(--r-md);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;border:none;cursor:pointer;transition:var(--tr);white-space:nowrap}
+.btn-a{background:var(--accent);color:white}.btn-a:hover{background:#6d28d9;box-shadow:0 0 16px var(--accent-glow)}
+.btn-g{background:var(--bg-card2);color:var(--text-secondary);border:1px solid var(--border)}.btn-g:hover{background:var(--bg-hover);color:var(--text-primary)}
+.btn-d{background:var(--ruby-dim);color:var(--ruby);border:1px solid rgba(232,64,64,0.2)}.btn-d:hover{background:var(--ruby);color:white}
+.btn-gold{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(232,160,32,0.2)}.btn-gold:hover{background:var(--gold);color:#0b0f14}
+.btn-sm{height:28px;padding:0 11px;font-size:0.72rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g-ma{display:grid;grid-template-columns:1fr 320px;gap:18px}
+.g-64{display:grid;grid-template-columns:60fr 40fr;gap:18px}
+.pw{height:4px;background:var(--bg-card2);border-radius:2px;overflow:hidden;margin-top:5px}
+.pf{height:100%;border-radius:2px}
+.al{padding:4px 0}
+.ai{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--border-light);transition:var(--tr);cursor:pointer}
+.ai:last-child{border-bottom:none}
+.ai:hover{background:var(--bg-hover)}
+.at{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);width:50px;text-align:right;flex-shrink:0}
+.as{width:2px;height:36px;border-radius:2px;flex-shrink:0}
+.ab{flex:1}
+.ab strong{font-size:0.81rem;color:var(--text-primary);display:block;font-weight:500}
+.ab span{font-size:0.68rem;color:var(--text-muted)}
+.sr{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light)}
+.sr:last-child{border-bottom:none}
+.sr-l{font-size:0.79rem;color:var(--text-secondary)}
+.sr-v{font-size:0.82rem;font-weight:600;font-family:'JetBrains Mono',monospace}
+.dr{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border-light)}
+.dr:last-child{border-bottom:none}
+.dn{font-size:0.78rem;color:var(--text-secondary);width:110px;flex-shrink:0}
+.dw{flex:1;height:4px;background:var(--bg-card2);border-radius:2px;overflow:hidden}
+.df{height:100%;border-radius:2px}
+.dv{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);width:44px;text-align:right;flex-shrink:0}
+.bb-bar{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px}
+.bc{padding:20px 24px;border-right:1px solid var(--border);position:relative}
+.bc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cc,var(--accent))}
+.bc:last-child{border-right:none}
+.bc-lbl{font-size:0.66rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:8px}
+.bc-val{font-family:'DM Serif Display',serif;font-size:1.6rem}
+.bc-sub{font-size:0.68rem;color:var(--text-muted);margin-top:4px}
+.isel{background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:4px 10px;font-family:'DM Sans',sans-serif;font-size:0.74rem;color:var(--text-secondary);outline:none;cursor:pointer}
+.iinp{background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:0.77rem;color:var(--text-secondary);outline:none;width:200px}
+.iinp::placeholder{color:var(--text-muted)}
+.iinp:focus{border-color:var(--accent)}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.qa{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;text-align:center;cursor:pointer;transition:var(--tr);position:relative;overflow:hidden}
+.qa:hover{border-color:rgba(255,255,255,0.14);transform:translateY(-2px)}
+.qa-i{font-size:1.35rem;margin-bottom:8px}
+.qa-l{font-size:0.73rem;font-weight:600;color:var(--text-secondary)}
+.mb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center}
+.mb.open{display:flex}
+.mbox{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.5);animation:mslide 0.22s cubic-bezier(0.4,0,0.2,1)}
+@keyframes mslide{from{transform:translateY(18px) scale(0.97);opacity:0}to{transform:none;opacity:1}}
+.mh{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mh h3{font-family:'DM Serif Display',serif;font-size:1.1rem}
+.mx{width:28px;height:28px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:0.82rem;transition:var(--tr)}
+.mx:hover{background:var(--ruby-dim);color:var(--ruby)}
+.mbody{padding:22px 24px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fgl{margin-bottom:13px}
+.fgl label{display:block;font-size:0.68rem;font-weight:700;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px}
+.fgl input,.fgl select,.fgl textarea{width:100%;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-md);padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:0.83rem;color:var(--text-primary);outline:none;transition:var(--tr)}
+.fgl input:focus,.fgl select:focus,.fgl textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.fgl input::placeholder{color:var(--text-dim)}
+.fgl select option{background:var(--bg-card)}
+.mf{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.info-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;margin-bottom:18px}
+.info-card h3{font-family:'DM Serif Display',serif;font-size:1rem;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-light)}
+.info-row:last-child{border-bottom:none}
+.info-row .lbl{font-size:0.75rem;color:var(--text-muted)}
+.info-row .val{font-size:0.82rem;font-weight:600}
+.welcome-banner{background:linear-gradient(135deg,var(--accent-dim),transparent);border:1px solid rgba(124,58,237,0.2);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
+.wb-icon{font-size:2rem}
+.wb-text h3{font-family:'DM Serif Display',serif;font-size:1.1rem}
+.wb-text p{font-size:0.78rem;color:var(--text-muted);margin-top:3px}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg-card2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r-md);padding:13px 18px;font-size:0.83rem;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;display:none;max-width:300px}
+.toast.show{display:block;animation:tin 0.22s cubic-bezier(0.4,0,0.2,1)}
+@keyframes tin{from{transform:translateX(14px);opacity:0}to{transform:none;opacity:1}}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.empty-state .ei{font-size:2.5rem;margin-bottom:12px}
+.empty-state p{font-size:0.82rem}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg-hover);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-logo">
+    <img id="login-logo-img" style="height:64px;width:auto;object-fit:contain;border-radius:10px;margin:0 auto 12px;display:block"/>
+    <h1 style="font-family:'DM Serif Display',serif;font-size:2rem">MARK Hospitals</h1>
+    <p style="font-size:0.78rem;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px">Hospital Management System — Enterprise</p>
+  </div>
+  <p class="portal-title">Sign in with your hospital account</p>
+  <div class="login-box">
+    <div class="lb-head"><h3>Welcome</h3><p>Continue to the hospital management dashboard</p></div>
+    <div class="lb-foot"><button class="btn-login" onclick="doLogin()">Continue →</button></div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app">
+<div class="app-wrap">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <img id="sidebar-logo" style="height:38px;width:auto;object-fit:contain;border-radius:6px;flex-shrink:0"/>
+    <div class="logo-text"><h1>MARK</h1><span>Hospitals HMS</span></div>
+  </div>
+  <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="user-avatar" id="ua"></div>
+      <div class="user-info"><strong id="ui-name"></strong><span id="ui-role"></span></div>
+      <div class="status-dot"></div>
+    </div>
+    <div class="logout-btn" onclick="doLogout()">⬡ &nbsp;Sign Out</div>
+  </div>
+</aside>
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb">
+      <span class="bc-root">MARK Hospitals</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-cur" id="bc">Dashboard</span>
+    </div>
+    <div class="h-right">
+      <div class="date-chip"><div class="live-dot"></div><span id="live-clock"></span></div>
+      <div class="role-chip" id="role-chip"></div>
+      <div class="icon-btn" onclick="toast('🔔 ' + DB.notifications.length + ' unread notifications')">🔔<span class="notif-pip"></span></div>
+      <button onclick="doLogout()" style="display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:var(--ruby-dim);border:1px solid rgba(232,64,64,0.25);border-radius:var(--r-md);color:var(--ruby);font-family:'DM Sans',sans-serif;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='#e84040';this.style.color='white'" onmouseout="this.style.background='var(--ruby-dim)';this.style.color='var(--ruby)'">⬡ &nbsp;Sign Out</button>
+    </div>
+  </header>
+  <main class="content" id="main-content"></main>
+</div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="mb" id="m-addPatient">
+  <div class="mbox">
+    <div class="mh"><h3>Admit New Patient</h3><div class="mx" onclick="closeM('addPatient')">✕</div></div>
+    <div class="mbody">
+      <div class="fr">
+        <div class="fgl"><label>First Name *</label><input id="ap-fname" type="text" placeholder="e.g. Aarav"/></div>
+        <div class="fgl"><label>Last Name *</label><input id="ap-lname" type="text" placeholder="e.g. Patel"/></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Age</label><input id="ap-age" type="number" min="0" max="150" placeholder="e.g. 34"/></div>
+        <div class="fgl"><label>Gender</label><select id="ap-gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Phone</label><input id="ap-phone" type="tel" placeholder="+91 98765 43210"/></div>
+        <div class="fgl"><label>Blood Group</label><select id="ap-blood"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Ward</label><select id="ap-ward"><option>General</option><option>ICU</option><option>Ortho</option><option>Neuro</option><option>Maternity</option><option>Oncology</option></select></div>
+        <div class="fgl"><label>Assigned Doctor</label><select id="ap-doctor"></select></div>
+      </div>
+      <div class="fgl"><label>Primary Diagnosis *</label><input id="ap-diag" type="text" placeholder="e.g. Hypertension"/></div>
+      <div class="fgl"><label>Status</label><select id="ap-status"><option>Stable</option><option>Critical</option><option>Under Obs.</option><option>Improving</option><option>Monitoring</option></select></div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeM('addPatient')">Cancel</button><button class="btn btn-a" onclick="admitPatient()">Admit Patient</button></div>
+  </div>
+</div>
+
+<div class="mb" id="m-bookAppt">
+  <div class="mbox">
+    <div class="mh"><h3>Book Appointment</h3><div class="mx" onclick="closeM('bookAppt')">✕</div></div>
+    <div class="mbody">
+      <div class="fr">
+        <div class="fgl"><label>Patient Name *</label><input id="ba-patient" type="text" placeholder="Patient name…"/></div>
+        <div class="fgl"><label>Doctor</label><select id="ba-doctor"></select></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Date *</label><input id="ba-date" type="date"/></div>
+        <div class="fgl"><label>Time Slot</label><select id="ba-time"><option>09:00 AM</option><option>10:00 AM</option><option>10:30 AM</option><option>11:00 AM</option><option>12:00 PM</option><option>02:00 PM</option><option>03:00 PM</option><option>04:00 PM</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Type</label><select id="ba-type"><option>Consultation</option><option>Follow-up</option><option>Procedure</option></select></div>
+        <div class="fgl"><label>Department</label><select id="ba-dept"><option>Cardiology</option><option>Orthopaedics</option><option>Neurology</option><option>Gynaecology</option><option>Oncology</option><option>General</option></select></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeM('bookAppt')">Cancel</button><button class="btn btn-a" onclick="bookAppointment()">Book Appointment</button></div>
+  </div>
+</div>
+
+<div class="mb" id="m-addMed">
+  <div class="mbox">
+    <div class="mh"><h3>Add Medicine</h3><div class="mx" onclick="closeM('addMed')">✕</div></div>
+    <div class="mbody">
+      <div class="fr">
+        <div class="fgl"><label>Medicine Name *</label><input id="med-name" type="text" placeholder="e.g. Metformin 500mg"/></div>
+        <div class="fgl"><label>Category</label><select id="med-cat"><option>Antidiabetic</option><option>Cardiac</option><option>Antibiotic</option><option>Emergency</option><option>Analgesic</option><option>Other</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Quantity *</label><input id="med-qty" type="number" min="0" placeholder="0"/></div>
+        <div class="fgl"><label>Unit</label><select id="med-unit"><option>Tablets</option><option>Capsules</option><option>Vials</option><option>Bottles</option><option>Ampoules</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Expiry Date</label><input id="med-expiry" type="date"/></div>
+        <div class="fgl"><label>Reorder Level</label><input id="med-reorder" type="number" min="0" placeholder="50"/></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeM('addMed')">Cancel</button><button class="btn btn-a" onclick="addMedicine()">Add Medicine</button></div>
+  </div>
+</div>
+
+<div class="mb" id="m-addBill">
+  <div class="mbox">
+    <div class="mh"><h3>Create Invoice</h3><div class="mx" onclick="closeM('addBill')">✕</div></div>
+    <div class="mbody">
+      <div class="fr">
+        <div class="fgl"><label>Patient *</label><input id="bill-patient" type="text" placeholder="Patient name…"/></div>
+        <div class="fgl"><label>Invoice Date</label><input id="bill-date" type="date"/></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Service *</label><input id="bill-service" type="text" placeholder="e.g. ICU Admission"/></div>
+        <div class="fgl"><label>Amount (₹) *</label><input id="bill-amount" type="number" min="0" placeholder="0"/></div>
+      </div>
+      <div class="fr">
+        <div class="fgl"><label>Payment Mode</label><select id="bill-mode"><option>Cash</option><option>Card</option><option>UPI</option><option>Insurance</option></select></div>
+        <div class="fgl"><label>Status</label><select id="bill-status"><option>Paid</option><option>Partial</option><option>Pending</option></select></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeM('addBill')">Cancel</button><button class="btn btn-gold" onclick="createInvoice()">Create Invoice</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+//  LOGO (embedded)
+// ════════════════════════════════════════
+const LOGO_SRC = 'data:image/jpeg;base64,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';
+document.getElementById('login-logo-img').src = LOGO_SRC;
+document.getElementById('sidebar-logo').src = LOGO_SRC;
+
+// ════════════════════════════════════════
+//  CENTRAL DATA STORE
+// ════════════════════════════════════════
+const DB = {
+  patients: [
+    { id:'P-001', fname:'Aarav', lname:'Patel', age:34, gender:'Male', phone:'+91 98765 43210', blood:'O+', ward:'General', doctor:'Dr. Meera Nair', diag:'Hypertension', status:'Stable', admitted:'08 Mar 2026', initials:'AP', color:'linear-gradient(135deg,#0f7d8c,#006c7f)' },
+    { id:'P-002', fname:'Sunita', lname:'Reddy', age:58, gender:'Female', phone:'+91 98001 12345', blood:'B+', ward:'ICU', doctor:'Dr. Suresh Iyer', diag:'Cardiac Arrest', status:'Critical', admitted:'10 Mar 2026', initials:'SR', color:'linear-gradient(135deg,#c9a227,#a8841e)' },
+    { id:'P-003', fname:'Mohammed', lname:'Khan', age:42, gender:'Male', phone:'+91 99887 65432', blood:'A+', ward:'Ortho', doctor:'Dr. Arvind Pillai', diag:'Tibia Fracture', status:'Under Obs.', admitted:'07 Mar 2026', initials:'MK', color:'linear-gradient(135deg,#1a3160,#0f2044)' },
+    { id:'P-004', fname:'Priya', lname:'Desai', age:29, gender:'Female', phone:'+91 91234 56789', blood:'A-', ward:'Maternity', doctor:'Dr. Kavitha Das', diag:'Post-Op Care', status:'Stable', admitted:'11 Mar 2026', initials:'PD', color:'linear-gradient(135deg,#16a34a,#0f7a30)' },
+    { id:'P-005', fname:'Vikram', lname:'Singh', age:67, gender:'Male', phone:'+91 97654 32109', blood:'O-', ward:'Neuro', doctor:'Dr. Priya Rao', diag:'Stroke Recovery', status:'Improving', admitted:'05 Mar 2026', initials:'VS', color:'linear-gradient(135deg,#7c3aed,#5b21b6)' },
+  ],
+  doctors: [
+    { name:'Dr. Meera Nair', spec:'Cardiologist', dept:'Cardiology', exp:'14 yrs', reg:'MCI-82741', today:8, status:'On Duty' },
+    { name:'Dr. Suresh Iyer', spec:'Orthopaedic Surgeon', dept:'Orthopaedics', exp:'18 yrs', reg:'MCI-64112', today:5, status:'On Duty' },
+    { name:'Dr. Priya Rao', spec:'Neurologist', dept:'Neurology', exp:'11 yrs', reg:'MCI-73390', today:6, status:'On Duty' },
+    { name:'Dr. Arvind Pillai', spec:'Gynaecologist', dept:'Gynaecology', exp:'20 yrs', reg:'MCI-55028', today:4, status:'In Surgery' },
+    { name:'Dr. Kavitha Das', spec:'Oncologist', dept:'Oncology', exp:'9 yrs', reg:'MCI-91045', today:3, status:'On Duty' },
+    { name:'Dr. Rajiv Varma', spec:'Anaesthesiologist', dept:'Surgery / OT', exp:'16 yrs', reg:'MCI-48762', today:7, status:'Off Duty' },
+  ],
+  appointments: [
+    { time:'09:00', patient:'Ravi Shankar', doctor:'Dr. Meera Nair', dept:'Cardiology', type:'Follow-up', duration:'20 min', status:'Completed', date:'12 Mar 2026' },
+    { time:'10:30', patient:'Anita Varma', doctor:'Dr. Suresh Iyer', dept:'Orthopaedics', type:'Procedure', duration:'45 min', status:'In Progress', date:'12 Mar 2026' },
+    { time:'11:00', patient:'Gopal Menon', doctor:'Dr. Priya Rao', dept:'Neurology', type:'Follow-up', duration:'20 min', status:'Waiting', date:'12 Mar 2026' },
+    { time:'14:00', patient:'Arun Bose', doctor:'Dr. Kavitha Das', dept:'Oncology', type:'Consultation', duration:'40 min', status:'Scheduled', date:'12 Mar 2026' },
+    { time:'15:30', patient:'Nandini Rao', doctor:'Dr. Meera Nair', dept:'Cardiology', type:'Procedure', duration:'60 min', status:'Scheduled', date:'12 Mar 2026' },
+  ],
+  medicines: [
+    { name:'Metformin 500mg', cat:'Antidiabetic', qty:840, unit:'Tablets', expiry:'Jun 2027', reorder:100, status:'In Stock' },
+    { name:'Atorvastatin 20mg', cat:'Cardiac', qty:320, unit:'Tablets', expiry:'Jan 2027', reorder:400, status:'Low Stock' },
+    { name:'Adrenaline Injection', cat:'Emergency', qty:18, unit:'Vials', expiry:'Aug 2026', reorder:200, status:'Critical Low' },
+    { name:'Paracetamol 500mg', cat:'Analgesic', qty:5400, unit:'Tablets', expiry:'Dec 2028', reorder:500, status:'In Stock' },
+    { name:'Insulin (Rapid)', cat:'Antidiabetic', qty:44, unit:'Vials', expiry:'Mar 2027', reorder:200, status:'Low Stock' },
+  ],
+  invoices: [
+    { id:'INV-1042', patient:'Aarav Patel', service:'Consultation + Lab Tests', amount:24500, date:'12 Mar 2026', mode:'UPI', status:'Paid' },
+    { id:'INV-1041', patient:'Sunita Reddy', service:'ICU Admission', amount:112000, date:'11 Mar 2026', mode:'Insurance', status:'Partial' },
+    { id:'INV-1040', patient:'Mohammed Khan', service:'Ortho Surgery', amount:38200, date:'10 Mar 2026', mode:'Card', status:'Pending' },
+    { id:'INV-1039', patient:'Priya Desai', service:'Maternity Package', amount:52800, date:'11 Mar 2026', mode:'Cash', status:'Paid' },
+  ],
+  notifications: ['Low stock alert: Adrenaline Injection', 'New patient admitted: P-008', '3 appointments pending today'],
+  _patientCounter: 8,
+  _invoiceCounter: 1043,
+};
+
+// ════════════════════════════════════════
+//  UTILITY HELPERS
+// ════════════════════════════════════════
+function statusBadge(s) {
+  const m = { 'Stable':'bg','Critical':'br','Under Obs.':'by','Improving':'bb','Monitoring':'bv','Scheduled':'bgr','Waiting':'br','In Progress':'by','Completed':'bg','On Duty':'bg','In Surgery':'by','Off Duty':'br','Paid':'bg','Partial':'by','Pending':'br','In Stock':'bg','Low Stock':'by','Critical Low':'br','Done':'bg','Dispensed':'bg','Drug Alert':'br' };
+  return `<span class="badge ${m[s]||'bgr'}">${s}</span>`;
+}
+function apptTypeBadge(t) { const m={'Follow-up':'bt','Procedure':'bv','Consultation':'bb','Consult':'bb'}; return `<span class="badge ${m[t]||'bt'}">${t}</span>`; }
+function fmtCurrency(n) { return '₹' + Number(n).toLocaleString('en-IN'); }
+function makeInitials(fname,lname) { return (fname[0]+(lname?lname[0]:'')).toUpperCase(); }
+function randomColor() { const c=['linear-gradient(135deg,#0f7d8c,#006c7f)','linear-gradient(135deg,#7c3aed,#5b21b6)','linear-gradient(135deg,#16a34a,#0f7a30)','linear-gradient(135deg,#d97706,#b45309)','linear-gradient(135deg,#dc2626,#b91c1c)','linear-gradient(135deg,#1a3160,#0f2044)']; return c[Math.floor(Math.random()*c.length)]; }
+function today() { return new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,' '); }
+
+// ════════════════════════════════════════
+//  LIVE CLOCK
+// ════════════════════════════════════════
+function startClock() {
+  function tick() {
+    const el = document.getElementById('live-clock');
+    if (el) { const d = new Date(); el.textContent = d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) + ' · ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+  }
+  tick(); setInterval(tick, 1000);
+}
+
+// ════════════════════════════════════════
+//  ROLE AUTH
+// ════════════════════════════════════════
+const ROLES = {
+  admin:        { label:'Administrator', color:'var(--accent)',   bg:'var(--accent-dim)',   border:'rgba(124,58,237,0.25)',  avatar:'AD', avatarBg:'linear-gradient(135deg,#7c3aed,#5b21b6)', user:'admin',       pass:'admin123'   },
+  doctor:       { label:'Doctor',        color:'var(--sapphire)', bg:'var(--sapphire-dim)', border:'rgba(74,144,217,0.25)',  avatar:'DR', avatarBg:'linear-gradient(135deg,#4a90d9,#2563eb)', user:'dr.meera',    pass:'doctor123'  },
+  patient:      { label:'Patient',       color:'var(--emerald)',  bg:'var(--emerald-dim)',  border:'rgba(34,197,94,0.25)',   avatar:'AP', avatarBg:'linear-gradient(135deg,#22c55e,#16a34a)', user:'p001',        pass:'patient123' },
+  receptionist: { label:'Receptionist',  color:'var(--gold)',     bg:'var(--gold-dim)',     border:'rgba(232,160,32,0.25)',  avatar:'RC', avatarBg:'linear-gradient(135deg,#e8a020,#d97706)', user:'reception',   pass:'recep123'   },
+  pharmacist:   { label:'Pharmacist',    color:'var(--violet)',   bg:'var(--violet-dim)',   border:'rgba(155,93,229,0.25)',  avatar:'PH', avatarBg:'linear-gradient(135deg,#9b5de5,#7c3aed)', user:'pharmacist',  pass:'pharma123'  },
+  finance:      { label:'Finance',       color:'var(--ruby)',     bg:'var(--ruby-dim)',     border:'rgba(232,64,64,0.25)',   avatar:'FO', avatarBg:'linear-gradient(135deg,#e84040,#b91c1c)', user:'finance',     pass:'finance123' },
+};
+const NAMES = { admin:'Dr. Ramesh Kumar', doctor:'Dr. Meera Nair', patient:'Aarav Patel', receptionist:'Priya Sharma', pharmacist:'Rajan Iyer', finance:'Kavitha Das' };
+let currentRole = null;
+
+function doLogin() {
+ const role = 'admin';
+ document.getElementById('login-screen').style.display = 'none';
+ document.getElementById('app').style.display = 'block';
+ currentRole = role;
+ buildApp(role);
+ startClock();
+}
+document.addEventListener('keydown', e => {
+ if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+});
+function doLogout() {
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  currentRole=null;
+}
+
+// ════════════════════════════════════════
+//  APP SHELL BUILDER
+// ════════════════════════════════════════
+function buildApp(role) {
+  const R = ROLES[role];
+  const ua = document.getElementById('ua');
+  ua.textContent = R.avatar; ua.style.background = R.avatarBg;
+  document.getElementById('ui-name').textContent = NAMES[role];
+  document.getElementById('ui-role').textContent = R.label;
+  const rc = document.getElementById('role-chip');
+  rc.textContent = R.label;
+  rc.style.setProperty('--rc-bg', R.bg);
+  rc.style.setProperty('--rc-b', R.border);
+  rc.style.setProperty('--rc-c', R.color);
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = ''; document.getElementById('main-content').innerHTML = '';
+  const builders = { admin:buildAdmin, doctor:buildDoctor, patient:buildPatient, receptionist:buildReceptionist, pharmacist:buildPharmacist, finance:buildFinance };
+  builders[role](nav);
+  populateDoctorSelects();
+}
+
+// ════════════════════════════════════════
+//  NAV HELPERS
+// ════════════════════════════════════════
+function navLabel(t) { const d=document.createElement('div'); d.className='nav-label'; d.textContent=t; return d; }
+function navItem(icon, label, pageId, badge, badgeRed, isFirst) {
+  const d=document.createElement('div'); d.className='nav-item'+(isFirst?' active':'');
+  d.innerHTML=`<div class="nav-icon">${icon}</div>${label}${badge?`<span class="nav-badge${badgeRed?' red':''}">${badge}</span>`:''}`;
+  d.onclick=()=>{ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); d.classList.add('active'); showPage(pageId); document.getElementById('bc').textContent=label; };
+  return d;
+}
+function showPage(id) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); const p=document.getElementById(id); if(p) p.classList.add('active'); }
+function addPage(id, html) { const mc=document.getElementById('main-content'); const d=document.createElement('div'); d.className='page'; d.id=id; d.innerHTML=html; mc.appendChild(d); }
+function populateDoctorSelects() {
+  const names = DB.doctors.map(d=>d.name);
+  ['ap-doctor','ba-doctor'].forEach(id => {
+    const sel = document.getElementById(id); if(!sel) return;
+    sel.innerHTML = names.map(n=>`<option>${n}</option>`).join('');
+  });
+  document.getElementById('ba-date') && (document.getElementById('ba-date').value = new Date().toISOString().split('T')[0]);
+  document.getElementById('bill-date') && (document.getElementById('bill-date').value = new Date().toISOString().split('T')[0]);
+}
+
+// ════════════════════════════════════════
+//  CRUD ACTIONS
+// ════════════════════════════════════════
+function admitPatient() {
+  const fname = document.getElementById('ap-fname').value.trim();
+  const lname = document.getElementById('ap-lname').value.trim();
+  const diag  = document.getElementById('ap-diag').value.trim();
+  if (!fname || !lname || !diag) { toast('⚠ Please fill in required fields (Name, Diagnosis)'); return; }
+  DB._patientCounter++;
+  const id = 'P-' + String(DB._patientCounter).padStart(3,'0');
+  DB.patients.push({
+    id, fname, lname,
+    age: document.getElementById('ap-age').value || '—',
+    gender: document.getElementById('ap-gender').value,
+    phone: document.getElementById('ap-phone').value || '—',
+    blood: document.getElementById('ap-blood').value,
+    ward: document.getElementById('ap-ward').value,
+    doctor: document.getElementById('ap-doctor').value,
+    diag, status: document.getElementById('ap-status').value,
+    admitted: today(),
+    initials: makeInitials(fname, lname),
+    color: randomColor()
+  });
+  closeM('addPatient');
+  ['ap-fname','ap-lname','ap-age','ap-phone','ap-diag'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  toast(`✓ Patient ${id} (${fname} ${lname}) admitted successfully!`);
+  refreshCurrentPage();
+}
+
+function bookAppointment() {
+  const patient = document.getElementById('ba-patient').value.trim();
+  const date    = document.getElementById('ba-date').value;
+  if (!patient || !date) { toast('⚠ Patient name and date are required'); return; }
+  const dateStr = new Date(date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  DB.appointments.push({
+    time: document.getElementById('ba-time').value,
+    patient,
+    doctor: document.getElementById('ba-doctor').value,
+    dept: document.getElementById('ba-dept').value,
+    type: document.getElementById('ba-type').value,
+    duration: '30 min',
+    status: 'Scheduled',
+    date: dateStr
+  });
+  closeM('bookAppt');
+  document.getElementById('ba-patient').value = '';
+  toast(`✓ Appointment booked for ${patient} on ${dateStr}!`);
+  refreshCurrentPage();
+}
+
+function addMedicine() {
+  const name = document.getElementById('med-name').value.trim();
+  const qty  = parseInt(document.getElementById('med-qty').value) || 0;
+  if (!name) { toast('⚠ Medicine name is required'); return; }
+  const reorder = parseInt(document.getElementById('med-reorder').value) || 50;
+  let status = qty === 0 ? 'Out of Stock' : qty < reorder ? (qty < reorder*0.2 ? 'Critical Low' : 'Low Stock') : 'In Stock';
+  DB.medicines.push({
+    name, cat: document.getElementById('med-cat').value,
+    qty, unit: document.getElementById('med-unit').value,
+    expiry: document.getElementById('med-expiry').value || '—',
+    reorder, status
+  });
+  closeM('addMed');
+  ['med-name','med-qty','med-expiry','med-reorder'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  toast(`✓ ${name} added to inventory!`);
+  refreshCurrentPage();
+}
+
+function createInvoice() {
+  const patient = document.getElementById('bill-patient').value.trim();
+  const service = document.getElementById('bill-service').value.trim();
+  const amount  = parseFloat(document.getElementById('bill-amount').value) || 0;
+  if (!patient || !service || !amount) { toast('⚠ Patient, service and amount are required'); return; }
+  DB._invoiceCounter++;
+  const id = 'INV-' + DB._invoiceCounter;
+  const dateStr = new Date(document.getElementById('bill-date').value || Date.now()).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  DB.invoices.unshift({ id, patient, service, amount, date: dateStr, mode: document.getElementById('bill-mode').value, status: document.getElementById('bill-status').value });
+  closeM('addBill');
+  ['bill-patient','bill-service','bill-amount'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  toast(`✓ Invoice ${id} created for ${fmtCurrency(amount)}!`);
+  refreshCurrentPage();
+}
+
+function refreshCurrentPage() {
+  const active = document.querySelector('.nav-item.active');
+  if (active) active.click();
+}
+
+// ════════════════════════════════════════
+//  SEARCH / FILTER
+// ════════════════════════════════════════
+function filterTable(inputId, tableBodyId) {
+  const q = document.getElementById(inputId).value.toLowerCase();
+  document.querySelectorAll('#'+tableBodyId+' tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  const visible = document.querySelectorAll('#'+tableBodyId+' tr:not([style*="none"])').length;
+  let empty = document.getElementById(tableBodyId+'-empty');
+  if (!empty) { empty=document.createElement('tr'); empty.id=tableBodyId+'-empty'; empty.innerHTML=`<td colspan="20" style="text-align:center;padding:32px;color:var(--text-muted)">🔍 No results found for "<strong>${q}</strong>"</td>`; document.getElementById(tableBodyId).parentNode.appendChild(empty); }
+  empty.style.display = visible===0 ? '' : 'none';
+}
+
+// ════════════════════════════════════════
+//  RENDER FUNCTIONS (dynamic)
+// ════════════════════════════════════════
+function renderPatientTable(patients, cols) {
+  if (!patients.length) return `<div class="empty-state"><div class="ei">🏥</div><p>No patients found. Admit a patient to get started.</p></div>`;
+  return `<table class="dt"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody id="pt-tbody">` +
+    patients.map(p => `<tr>
+      <td class="mono">${p.id}</td>
+      <td><div class="ar"><div class="av" style="background:${p.color}">${p.initials}</div><div class="avi"><strong>${p.fname} ${p.lname}</strong><span>${p.diag}</span></div></div></td>
+      <td>${p.age}, ${p.gender[0]}</td>
+      <td>${p.ward}</td>
+      <td>${p.doctor}</td>
+      <td>${p.admitted}</td>
+      <td>${statusBadge(p.status)}</td>
+      <td><button class="btn btn-g btn-sm" onclick="toast('Viewing ${p.fname} ${p.lname} — ${p.id}')">View</button></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+function renderApptTable(appts) {
+  if (!appts.length) return `<div class="empty-state"><div class="ei">📅</div><p>No appointments yet. Book one to get started.</p></div>`;
+  return `<table class="dt"><thead><tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Dept</th><th>Type</th><th>Duration</th><th>Date</th><th>Status</th></tr></thead><tbody id="appt-tbody">` +
+    appts.map(a => `<tr>
+      <td class="mono"><strong>${a.time}</strong></td>
+      <td>${a.patient}</td>
+      <td>${a.doctor}</td>
+      <td>${a.dept}</td>
+      <td>${apptTypeBadge(a.type)}</td>
+      <td>${a.duration}</td>
+      <td class="mono">${a.date}</td>
+      <td>${statusBadge(a.status)}</td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+function renderInvoiceTable(invoices) {
+  if (!invoices.length) return `<div class="empty-state"><div class="ei">💳</div><p>No invoices yet.</p></div>`;
+  return `<table class="dt"><thead><tr><th>Invoice</th><th>Patient</th><th>Service</th><th>Amount</th><th>Date</th><th>Mode</th><th>Status</th><th></th></tr></thead><tbody id="inv-tbody">` +
+    invoices.map(i => `<tr>
+      <td class="mono"><strong>${i.id}</strong></td>
+      <td>${i.patient}</td>
+      <td>${i.service}</td>
+      <td class="mono">${fmtCurrency(i.amount)}</td>
+      <td class="mono">${i.date}</td>
+      <td>${i.mode}</td>
+      <td>${statusBadge(i.status)}</td>
+      <td><button class="btn btn-g btn-sm" onclick="toast('Receipt for ${i.id}')">↓ Receipt</button></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+function renderMedicineTable(meds) {
+  if (!meds.length) return `<div class="empty-state"><div class="ei">💊</div><p>No medicines in inventory.</p></div>`;
+  return `<table class="dt"><thead><tr><th>Medicine</th><th>Category</th><th>Stock</th><th>Reorder Lvl</th><th>Expiry</th><th>Status</th><th></th></tr></thead><tbody id="med-tbody">` +
+    meds.map(m => {
+      const pct = Math.min(100, Math.round((m.qty / Math.max(m.reorder*2, m.qty+1))*100));
+      const barColor = m.status==='In Stock'?'var(--emerald)': m.status==='Low Stock'?'var(--gold)':'var(--ruby)';
+      return `<tr>
+        <td><strong>${m.name}</strong></td>
+        <td>${m.cat}</td>
+        <td><div class="mono" style="color:${barColor}">${m.qty} ${m.unit}</div><div class="pw" style="width:90px"><div class="pf" style="width:${pct}%;background:${barColor}"></div></div></td>
+        <td class="mono">${m.reorder}</td>
+        <td class="mono">${m.expiry}</td>
+        <td>${statusBadge(m.status)}</td>
+        <td><button class="btn btn-g btn-sm" onclick="toast('Editing ${m.name}')">Edit</button></td>
+      </tr>`;
+    }).join('') + '</tbody></table>';
+}
+
+// KPI counts (dynamic)
+function getKPIs() {
+  const total = DB.patients.length;
+  const icu = DB.patients.filter(p=>p.ward==='ICU').length;
+  const today_appts = DB.appointments.filter(a=>a.date.includes('Mar 2026')).length;
+  const lowStock = DB.medicines.filter(m=>m.status!=='In Stock').length;
+  const revenue = DB.invoices.filter(i=>i.status==='Paid').reduce((s,i)=>s+i.amount,0);
+  return { total, icu, today_appts, lowStock, revenue };
+}
+
+// ════════════════════════════════════════
+//  ADMIN DASHBOARD
+// ════════════════════════════════════════
+function buildAdmin(nav) {
+  nav.appendChild(navLabel('Overview'));
+  nav.appendChild(navItem('◈','Dashboard','a-dash',null,false,true));
+  nav.appendChild(navLabel('Clinical'));
+  nav.appendChild(navItem('👤','Patient Management','a-patients'));
+  nav.appendChild(navItem('🩺','Doctors & Staff','a-doctors'));
+  nav.appendChild(navItem('📋','Appointments','a-appts'));
+  nav.appendChild(navLabel('Operations'));
+  nav.appendChild(navItem('💳','Billing & Finance','a-billing'));
+  nav.appendChild(navItem('💊','Pharmacy','a-pharma'));
+  nav.appendChild(navLabel('Reports'));
+  nav.appendChild(navItem('📊','Reports','a-reports'));
+
+  // Pages are rendered dynamically on each visit
+  ['a-dash','a-patients','a-doctors','a-appts','a-billing','a-pharma','a-reports'].forEach(id => {
+    const d = document.createElement('div'); d.className='page'; d.id=id; document.getElementById('main-content').appendChild(d);
+  });
+
+  // Override click to re-render each time
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const origClick = item.onclick;
+    item.onclick = function() {
+      origClick && origClick.call(this);
+      renderAdminPage(item.textContent.replace(/\d+/g,'').trim());
+    };
+  });
+
+  renderAdminDash();
+  document.getElementById('a-dash').classList.add('active');
+}
+
+function renderAdminPage(label) {
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  const id = active.id;
+  if (id==='a-dash') renderAdminDash();
+  else if (id==='a-patients') renderAdminPatients();
+  else if (id==='a-appts') renderAdminAppts();
+  else if (id==='a-billing') renderAdminBilling();
+  else if (id==='a-pharma') renderAdminPharma();
+  else if (id==='a-doctors') renderAdminDoctors();
+}
+
+function renderAdminDash() {
+  const k = getKPIs();
+  document.getElementById('a-dash').innerHTML = `
+<div class="ptb"><div><h2>Dashboard Overview</h2><p>Real-time hospital performance</p></div><div class="ptb-a"><button class="btn btn-g btn-sm" onclick="toast('Exporting report…')">↓ Export</button><button class="btn btn-a btn-sm" onclick="openM('addPatient')">+ Admit Patient</button></div></div>
+<div class="kpi-grid six">
+  <div class="kpi-card" style="--kc:var(--accent);--kd:var(--accent-dim)"><div class="kpi-top"><div class="kpi-icon">🛏</div><span class="kpi-trend up">Live</span></div><div class="kpi-val">${k.total}</div><div class="kpi-lbl">Total Patients</div></div>
+  <div class="kpi-card" style="--kc:var(--sapphire);--kd:var(--sapphire-dim)"><div class="kpi-top"><div class="kpi-icon">🩺</div><span class="kpi-trend fl">${DB.doctors.filter(d=>d.status==='On Duty').length} on duty</span></div><div class="kpi-val">${DB.doctors.length}</div><div class="kpi-lbl">Medical Staff</div></div>
+  <div class="kpi-card" style="--kc:var(--gold);--kd:var(--gold-dim)"><div class="kpi-top"><div class="kpi-icon">📅</div><span class="kpi-trend up">Today</span></div><div class="kpi-val">${k.today_appts}</div><div class="kpi-lbl">Appointments</div></div>
+  <div class="kpi-card" style="--kc:var(--emerald);--kd:var(--emerald-dim)"><div class="kpi-top"><div class="kpi-icon">💰</div><span class="kpi-trend up">Collected</span></div><div class="kpi-val">${fmtCurrency(k.revenue)}</div><div class="kpi-lbl">Revenue Collected</div></div>
+  <div class="kpi-card" style="--kc:var(--ruby);--kd:var(--ruby-dim)"><div class="kpi-top"><div class="kpi-icon">🚨</div><span class="kpi-trend dn">ICU</span></div><div class="kpi-val">${k.icu}</div><div class="kpi-lbl">ICU Patients</div></div>
+  <div class="kpi-card" style="--kc:var(--violet);--kd:var(--violet-dim)"><div class="kpi-top"><div class="kpi-icon">⚠️</div><span class="kpi-trend dn">alerts</span></div><div class="kpi-val">${k.lowStock}</div><div class="kpi-lbl">Low Stock Alerts</div></div>
+</div>
+<div class="qa-grid">
+  <div class="qa" onclick="openM('addPatient')"><div class="qa-i">➕</div><div class="qa-l">Admit Patient</div></div>
+  <div class="qa" onclick="openM('bookAppt')"><div class="qa-i">📆</div><div class="qa-l">Book Appointment</div></div>
+  <div class="qa" onclick="openM('addBill')"><div class="qa-i">💳</div><div class="qa-l">Create Invoice</div></div>
+  <div class="qa" onclick="toast('🚨 Emergency alert dispatched!')"><div class="qa-i">🚑</div><div class="qa-l">Emergency Alert</div></div>
+</div>
+<div class="g-ma">
+  <div class="panel">
+    <div class="ph"><div class="pt"><div class="ptd"></div>Recent Patients</div><button class="btn btn-a btn-sm" onclick="openM('addPatient')">+ Admit</button></div>
+    <table class="dt"><thead><tr><th>ID</th><th>Patient</th><th>Ward</th><th>Admitted</th><th>Status</th></tr></thead><tbody>
+      ${DB.patients.slice(-5).reverse().map(p=>`<tr>
+        <td class="mono">${p.id}</td>
+        <td><div class="ar"><div class="av" style="background:${p.color}">${p.initials}</div><div class="avi"><strong>${p.fname} ${p.lname}</strong><span>${p.diag}</span></div></div></td>
+        <td>${p.ward}</td><td class="mono">${p.admitted}</td><td>${statusBadge(p.status)}</td>
+      </tr>`).join('')}
+    </tbody></table>
+  </div>
+  <div class="panel">
+    <div class="ph"><div class="pt"><div class="ptd" style="background:var(--gold)"></div>Upcoming Appointments</div><button class="btn btn-a btn-sm" onclick="openM('bookAppt')">+ Book</button></div>
+    <div class="al">
+      ${DB.appointments.filter(a=>a.status==='Scheduled'||a.status==='Waiting').slice(0,4).map(a=>`
+        <div class="ai"><div class="at">${a.time}</div><div class="as" style="background:var(--accent)"></div><div class="ab"><strong>${a.patient}</strong><span>${a.doctor} · ${a.dept}</span></div>${statusBadge(a.status)}</div>
+      `).join('') || '<div class="empty-state" style="padding:24px"><p>No upcoming appointments</p></div>'}
+    </div>
+  </div>
+</div>`;
+}
+
+function renderAdminPatients() {
+  const cols = ['ID','Patient','Age/Sex','Ward','Doctor','Admitted','Status',''];
+  document.getElementById('a-patients').innerHTML = `
+<div class="ptb"><div><h2>Patient Management</h2><p>${DB.patients.length} patients registered</p></div><button class="btn btn-a" onclick="openM('addPatient')">+ Admit Patient</button></div>
+<div class="kpi-grid four">
+  <div class="kpi-card" style="--kc:var(--accent)"><div class="kpi-top"><div class="kpi-icon">🏥</div></div><div class="kpi-val">${DB.patients.length}</div><div class="kpi-lbl">Total</div></div>
+  <div class="kpi-card" style="--kc:var(--emerald)"><div class="kpi-top"><div class="kpi-icon">✅</div></div><div class="kpi-val">${DB.patients.filter(p=>p.status==='Stable'||p.status==='Improving').length}</div><div class="kpi-lbl">Stable / Improving</div></div>
+  <div class="kpi-card" style="--kc:var(--ruby)"><div class="kpi-top"><div class="kpi-icon">🚨</div></div><div class="kpi-val">${DB.patients.filter(p=>p.ward==='ICU').length}</div><div class="kpi-lbl">ICU</div></div>
+  <div class="kpi-card" style="--kc:var(--gold)"><div class="kpi-top"><div class="kpi-icon">🔄</div></div><div class="kpi-val">${DB.patients.filter(p=>p.status==='Under Obs.'||p.status==='Monitoring').length}</div><div class="kpi-lbl">Under Observation</div></div>
+</div>
+<div class="panel">
+  <div class="ph"><div class="pt"><div class="ptd"></div>Patient Registry</div>
+    <div class="pa">
+      <select class="isel" id="ward-filter" onchange="filterByWard()">
+        <option value="">All Wards</option>
+        ${[...new Set(DB.patients.map(p=>p.ward))].map(w=>`<option>${w}</option>`).join('')}
+      </select>
+      <input class="iinp" type="text" placeholder="🔍 Search patients…" oninput="filterTable('patient-search','pt-tbody')" id="patient-search" style="width:220px"/>
+    </div>
+  </div>
+  <div id="patient-table-wrap">${renderPatientTable(DB.patients, cols)}</div>
+</div>`;
+}
+
+function filterByWard() {
+  const ward = document.getElementById('ward-filter').value;
+  const filtered = ward ? DB.patients.filter(p=>p.ward===ward) : DB.patients;
+  document.getElementById('patient-table-wrap').innerHTML = renderPatientTable(filtered, ['ID','Patient','Age/Sex','Ward','Doctor','Admitted','Status','']);
+}
+
+function renderAdminAppts() {
+  document.getElementById('a-appts').innerHTML = `
+<div class="ptb"><div><h2>Appointments</h2><p>${DB.appointments.length} total appointments</p></div><button class="btn btn-a" onclick="openM('bookAppt')">+ Book Appointment</button></div>
+<div class="kpi-grid four">
+  <div class="kpi-card" style="--kc:var(--gold)"><div class="kpi-top"><div class="kpi-icon">📅</div></div><div class="kpi-val">${DB.appointments.length}</div><div class="kpi-lbl">Total</div></div>
+  <div class="kpi-card" style="--kc:var(--emerald)"><div class="kpi-top"><div class="kpi-icon">✅</div></div><div class="kpi-val">${DB.appointments.filter(a=>a.status==='Completed'||a.status==='Done').length}</div><div class="kpi-lbl">Completed</div></div>
+  <div class="kpi-card" style="--kc:var(--sapphire)"><div class="kpi-top"><div class="kpi-icon">⏳</div></div><div class="kpi-val">${DB.appointments.filter(a=>a.status==='Scheduled').length}</div><div class="kpi-lbl">Scheduled</div></div>
+  <div class="kpi-card" style="--kc:var(--ruby)"><div class="kpi-top"><div class="kpi-icon">⚡</div></div><div class="kpi-val">${DB.appointments.filter(a=>a.status==='Waiting'||a.status==='In Progress').length}</div><div class="kpi-lbl">In Progress</div></div>
+</div>
+<div class="panel">
+  <div class="ph"><div class="pt"><div class="ptd" style="background:var(--gold)"></div>All Appointments</div>
+    <input class="iinp" type="text" placeholder="🔍 Search…" oninput="filterTable('appt-search','appt-tbody')" id="appt-search"/>
+  </div>
+  ${renderApptTable(DB.appointments)}
+</div>`;
+}
+
+function renderAdminBilling() {
+  const paid = DB.invoices.filter(i=>i.status==='Paid').reduce((s,i)=>s+i.amount,0);
+  const total = DB.invoices.reduce((s,i)=>s+i.amount,0);
+  document.getElementById('a-billing').innerHTML = `
+<div class="ptb"><div><h2>Billing & Finance</h2><p>${DB.invoices.length} invoices</p></div><button class="btn btn-a" onclick="openM('addBill')">+ Create Invoice</button></div>
+<div class="bb-bar">
+  <div class="bc" style="--cc:var(--accent)"><div class="bc-lbl">Total Billed</div><div class="bc-val">${fmtCurrency(total)}</div><div class="bc-sub">${DB.invoices.length} invoices</div></div>
+  <div class="bc" style="--cc:var(--emerald)"><div class="bc-lbl">Collected</div><div class="bc-val">${fmtCurrency(paid)}</div><div class="bc-sub">${total?Math.round(paid/total*100):0}% collection rate</div></div>
+  <div class="bc" style="--cc:var(--ruby)"><div class="bc-lbl">Outstanding</div><div class="bc-val">${fmtCurrency(total-paid)}</div><div class="bc-sub">${DB.invoices.filter(i=>i.status!=='Paid').length} pending invoices</div></div>
+</div>
+<div class="panel">
+  <div class="ph"><div class="pt"><div class="ptd" style="background:var(--gold)"></div>Invoice Register</div>
+    <div class="pa">
+      <select class="isel" id="inv-status-filter" onchange="filterInvoicesByStatus()">
+        <option value="">All Status</option><option>Paid</option><option>Partial</option><option>Pending</option>
+      </select>
+      <input class="iinp" type="text" placeholder="🔍 Search invoices…" oninput="filterTable('inv-search','inv-tbody')" id="inv-search"/>
+    </div>
+  </div>
+  <div id="invoice-table-wrap">${renderInvoiceTable(DB.invoices)}</div>
+</div>`;
+}
+function filterInvoicesByStatus() {
+  const s = document.getElementById('inv-status-filter').value;
+  document.getElementById('invoice-table-wrap').innerHTML = renderInvoiceTable(s?DB.invoices.filter(i=>i.status===s):DB.invoices);
+}
+
+function renderAdminPharma() {
+  const low = DB.medicines.filter(m=>m.status!=='In Stock').length;
+  document.getElementById('a-pharma').innerHTML = `
+<div class="ptb"><div><h2>Pharmacy & Inventory</h2><p>${DB.medicines.length} medicines tracked</p></div><button class="btn btn-a" onclick="openM('addMed')">+ Add Medicine</button></div>
+<div class="kpi-grid four">
+  <div class="kpi-card" style="--kc:var(--accent)"><div class="kpi-top"><div class="kpi-icon">💊</div></div><div class="kpi-val">${DB.medicines.length}</div><div class="kpi-lbl">Total SKUs</div></div>
+  <div class="kpi-card" style="--kc:var(--ruby)"><div class="kpi-top"><div class="kpi-icon">⚠️</div></div><div class="kpi-val">${low}</div><div class="kpi-lbl">Low / Critical</div></div>
+  <div class="kpi-card" style="--kc:var(--emerald)"><div class="kpi-top"><div class="kpi-icon">✅</div></div><div class="kpi-val">${DB.medicines.filter(m=>m.status==='In Stock').length}</div><div class="kpi-lbl">In Stock</div></div>
+  <div class="kpi-card" style="--kc:var(--gold)"><div class="kpi-top"><div class="kpi-icon">📦</div></div><div class="kpi-val">${fmtCurrency(DB.medicines.reduce((s,m)=>s+m.qty*10,0))}</div><div class="kpi-lbl">Est. Inventory Value</div></div>
+</div>
+<div class="panel">
+  <div class="ph"><div class="pt"><div class="ptd"></div>Medicine Inventory</div>
+    <div class="pa">
+      <select class="isel" id="med-status-filter" onchange="filterMedsByStatus()">
+        <option value="">All Status</option><option>In Stock</option><option>Low Stock</option><option>Critical Low</option>
+      </select>
+      <input class="iinp" type="text" placeholder="🔍 Search medicines…" oninput="filterTable('med-search','med-tbody')" id="med-search"/>
+    </div>
+  </div>
+  <div id="med-table-wrap">${renderMedicineTable(DB.medicines)}</div>
+</div>`;
+}
+function filterMedsByStatus() {
+  const s = document.getElementById('med-status-filter').value;
+  document.getElementById('med-table-wrap').innerHTML = renderMedicineTable(s?DB.medicines.filter(m=>m.status===s):DB.medicines);
+}
+
+function renderAdminDoctors() {
+  document.getElementById('a-doctors').innerHTML = `
+<div class="ptb"><div><h2>Doctors & Staff</h2><p>${DB.doctors.length} staff members</p></div><button class="btn btn-a" onclick="toast('Add staff form — coming soon')">+ Add Staff</button></div>
+<div class="kpi-grid four">
+  <div class="kpi-card" style="--kc:var(--sapphire)"><div class="kpi-top"><div class="kpi-icon">👨‍⚕️</div></div><div class="kpi-val">${DB.doctors.length}</div><div class="kpi-lbl">Doctors</div></div>
+  <div class="kpi-card" style="--kc:var(--emerald)"><div class="kpi-top"><div class="kpi-icon">✅</div></div><div class="kpi-val">${DB.doctors.filter(d=>d.status==='On Duty').length}</div><div class="kpi-lbl">On Duty</div></div>
+  <div class="kpi-card" style="--kc:var(--gold)"><div class="kpi-top"><div class="kpi-icon">🏬</div></div><div class="kpi-val">${[...new Set(DB.doctors.map(d=>d.dept))].length}</div><div class="kpi-lbl">Departments</div></div>
+  <div class="kpi-card" style="--kc:var(--ruby)"><div class="kpi-top"><div class="kpi-icon">🔴</div></div><div class="kpi-val">${DB.doctors.filter(d=>d.status!=='On Duty').length}</div><div class="kpi-lbl">Off Duty / Surgery</div></div>
+</div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--sapphire)"></div>Staff Directory</div></div>
+<table class="dt"><thead><tr><th>Doctor</th><th>Specialisation</th><th>Department</th><th>Exp.</th><th>Reg. No.</th><th>Patients Today</th><th>Status</th></tr></thead><tbody>
+${DB.doctors.map((d,i)=>{
+  const colors=['linear-gradient(135deg,#0f7d8c,#006c7f)','linear-gradient(135deg,#1a3160,#0f2044)','linear-gradient(135deg,#7c3aed,#5b21b6)','linear-gradient(135deg,#dc2626,#b91c1c)','linear-gradient(135deg,#16a34a,#0f7a30)','linear-gradient(135deg,#d97706,#b45309)'];
+  const init = d.name.split(' ').slice(1).map(w=>w[0]).join('').slice(0,2);
+  return `<tr><td><div class="ar"><div class="av" style="background:${colors[i%colors.length]}">${init}</div><div class="avi"><strong>${d.name}</strong></div></div></td>
+  <td>${d.spec}</td><td>${d.dept}</td><td>${d.exp}</td><td class="mono">${d.reg}</td><td>${d.today}</td><td>${statusBadge(d.status)}</td></tr>`;
+}).join('')}
+</tbody></table></div>`;
+}
+
+// ════════════════════════════════════════
+//  DOCTOR ROLE
+// ════════════════════════════════════════
+function buildDoctor(nav) {
+  nav.appendChild(navLabel('My Practice'));
+  nav.appendChild(navItem('◈','My Dashboard','d-dash',null,false,true));
+  nav.appendChild(navItem('👥','My Patients','d-patients'));
+  nav.appendChild(navItem('📋','My Appointments','d-appts'));
+  nav.appendChild(navLabel('Clinical'));
+  nav.appendChild(navItem('📝','Prescriptions','d-rx'));
+  nav.appendChild(navItem('🔬','Lab Results','d-labs'));
+  ['d-dash','d-patients','d-appts','d-rx','d-labs'].forEach(id=>{ const d=document.createElement('div'); d.className='page'; d.id=id; document.getElementById('main-content').appendChild(d); });
+  renderDoctorDash(); renderDoctorPatients(); renderDoctorAppts();
+  document.getElementById('d-rx').innerHTML=`<div class="ptb"><div><h2>Prescriptions</h2></div><button class="btn btn-a" onclick="toast('New Rx form')">+ New Rx</button></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>Active Prescriptions</div></div><table class="dt"><thead><tr><th>Patient</th><th>Medication</th><th>Dosage</th><th>Duration</th><th>Status</th></tr></thead><tbody><tr><td>Aarav Patel</td><td>Metformin 500mg</td><td>Twice daily</td><td>30 days</td><td>${statusBadge('Stable')}</td></tr><tr><td>Ravi Shankar</td><td>Atorvastatin 20mg</td><td>Once at night</td><td>90 days</td><td>${statusBadge('Stable')}</td></tr></tbody></table></div>`;
+  document.getElementById('d-labs').innerHTML=`<div class="ptb"><div><h2>Lab Results</h2></div></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--sapphire)"></div>Recent Lab Reports</div></div><table class="dt"><thead><tr><th>Patient</th><th>Test</th><th>Result</th><th>Normal Range</th><th>Date</th><th>Flag</th></tr></thead><tbody><tr><td>Aarav Patel</td><td>HbA1c</td><td class="mono">7.2%</td><td>4.0–5.6%</td><td class="mono">10 Mar</td><td>${statusBadge('Under Obs.')}</td></tr><tr><td>Sunita Reddy</td><td>Troponin I</td><td class="mono">2.4 ng/mL</td><td>&lt;0.04</td><td class="mono">10 Mar</td><td>${statusBadge('Critical')}</td></tr></tbody></table></div>`;
+  document.getElementById('d-dash').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    const orig=item.onclick; item.onclick=function(){ orig&&orig.call(this); const id=document.querySelector('.page.active')?.id; if(id==='d-patients') renderDoctorPatients(); if(id==='d-appts') renderDoctorAppts(); };
+  });
+}
+function renderDoctorDash() {
+  const myPts = DB.patients.filter(p=>p.doctor==='Dr. Meera Nair');
+  document.getElementById('d-dash').innerHTML=`
+<div class="welcome-banner"><div class="wb-icon">👋</div><div class="wb-text"><h3>Good morning, Dr. Meera Nair</h3><p>${myPts.length} patients under your care · ${DB.appointments.filter(a=>a.doctor==='Dr. Meera Nair').length} appointments today</p></div></div>
+<div class="kpi-grid four">
+  <div class="kpi-card" style="--kc:var(--accent)"><div class="kpi-top"><div class="kpi-icon">👥</div></div><div class="kpi-val">${myPts.length}</div><div class="kpi-lbl">My Patients</div></div>
+  <div class="kpi-card" style="--kc:var(--gold)"><div class="kpi-top"><div class="kpi-icon">📅</div></div><div class="kpi-val">${DB.appointments.filter(a=>a.doctor==='Dr. Meera Nair').length}</div><div class="kpi-lbl">Today's Appts</div></div>
+  <div class="kpi-card" style="--kc:var(--ruby)"><div class="kpi-top"><div class="kpi-icon">🚨</div></div><div class="kpi-val">${myPts.filter(p=>p.status==='Critical').length}</div><div class="kpi-lbl">Critical</div></div>
+  <div class="kpi-card" style="--kc:var(--emerald)"><div class="kpi-top"><div class="kpi-icon">✅</div></div><div class="kpi-val">${myPts.filter(p=>p.status==='Stable').length}</div><div class="kpi-lbl">Stable</div></div>
+</div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>My Patients</div></div>
+${renderPatientTable(myPts, ['ID','Patient','Age/Sex','Ward','Admitted','Status',''])}
+</div>`;
+}
+function renderDoctorPatients() {
+  const myPts = DB.patients.filter(p=>p.doctor==='Dr. Meera Nair');
+  document.getElementById('d-patients').innerHTML=`<div class="ptb"><div><h2>My Patients</h2><p>${myPts.length} patients</p></div></div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>Patient List</div><input class="iinp" type="text" placeholder="🔍 Search…" oninput="filterTable('dp-search','pt-tbody')" id="dp-search"/></div>${renderPatientTable(myPts,['ID','Patient','Age/Sex','Ward','Admitted','Status',''])}</div>`;
+}
+function renderDoctorAppts() {
+  const myAppts = DB.appointments.filter(a=>a.doctor==='Dr. Meera Nair');
+  document.getElementById('d-appts').innerHTML=`<div class="ptb"><div><h2>My Appointments</h2><p>${myAppts.length} appointments</p></div><button class="btn btn-a" onclick="openM('bookAppt')">+ Book Slot</button></div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--gold)"></div>My Schedule</div></div>${renderApptTable(myAppts)}</div>`;
+}
+
+// ════════════════════════════════════════
+//  PATIENT ROLE
+// ════════════════════════════════════════
+function buildPatient(nav) {
+  nav.appendChild(navLabel('My Health'));
+  nav.appendChild(navItem('◈','My Dashboard','pt-dash',null,false,true));
+  nav.appendChild(navItem('📋','My Appointments','pt-appts'));
+  nav.appendChild(navItem('📄','My Reports','pt-reports'));
+  nav.appendChild(navLabel('Billing'));
+  nav.appendChild(navItem('💳','My Bills','pt-bills'));
+  const me = DB.patients.find(p=>p.id==='P-001') || DB.patients[0];
+  const myInvoices = DB.invoices.filter(i=>i.patient===`${me.fname} ${me.lname}`);
+  ['pt-dash','pt-appts','pt-reports','pt-bills'].forEach(id=>{ const d=document.createElement('div'); d.className='page'; d.id=id; document.getElementById('main-content').appendChild(d); });
+  document.getElementById('pt-dash').innerHTML=`<div class="welcome-banner"><div class="wb-icon">👋</div><div class="wb-text"><h3>Hello, ${me.fname} ${me.lname}</h3><p>Patient ID: ${me.id} · Admitted: ${me.admitted} · Ward: ${me.ward}</p></div></div>
+<div class="g2"><div class="info-card"><h3>🏥 My Health Summary</h3><div class="info-row"><div class="lbl">Patient ID</div><div class="val mono">${me.id}</div></div><div class="info-row"><div class="lbl">Name</div><div class="val">${me.fname} ${me.lname}</div></div><div class="info-row"><div class="lbl">Age / Gender</div><div class="val">${me.age} · ${me.gender}</div></div><div class="info-row"><div class="lbl">Blood Group</div><div class="val">${me.blood}</div></div><div class="info-row"><div class="lbl">Ward</div><div class="val">${me.ward}</div></div><div class="info-row"><div class="lbl">Doctor</div><div class="val">${me.doctor}</div></div><div class="info-row"><div class="lbl">Diagnosis</div><div class="val">${me.diag}</div></div><div class="info-row"><div class="lbl">Status</div><div class="val">${statusBadge(me.status)}</div></div></div>
+<div class="info-card"><h3>💊 Current Medications</h3><div class="info-row"><div class="lbl">Metformin 500mg</div><div class="val">Twice daily</div></div><div class="info-row"><div class="lbl">Amlodipine 5mg</div><div class="val">Once daily</div></div><div class="info-row"><div class="lbl">Aspirin 75mg</div><div class="val">Once daily</div></div></div></div>`;
+  document.getElementById('pt-appts').innerHTML=`<div class="ptb"><div><h2>My Appointments</h2></div></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>Appointment History</div></div>${renderApptTable(DB.appointments.filter(a=>a.patient==='Ravi Shankar'||a.patient==='Aarav Patel'))}</div>`;
+  document.getElementById('pt-reports').innerHTML=`<div class="ptb"><div><h2>My Reports</h2></div></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--sapphire)"></div>Lab Reports</div></div><table class="dt"><thead><tr><th>Test</th><th>Result</th><th>Normal Range</th><th>Date</th><th>Flag</th><th></th></tr></thead><tbody><tr><td>HbA1c</td><td class="mono">7.2%</td><td>4.0–5.6%</td><td class="mono">10 Mar 2026</td><td>${statusBadge('Under Obs.')}</td><td><button class="btn btn-g btn-sm" onclick="toast('PDF downloaded')">↓ PDF</button></td></tr><tr><td>Blood Pressure</td><td class="mono">138/88 mmHg</td><td>120/80 mmHg</td><td class="mono">12 Mar 2026</td><td>${statusBadge('Under Obs.')}</td><td><button class="btn btn-g btn-sm" onclick="toast('PDF downloaded')">↓ PDF</button></td></tr></tbody></table></div>`;
+  document.getElementById('pt-bills').innerHTML=`<div class="ptb"><div><h2>My Bills</h2></div></div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>My Invoices</div></div>${renderInvoiceTable(myInvoices)}</div>`;
+  document.getElementById('pt-dash').classList.add('active');
+}
+
+// ════════════════════════════════════════
+//  RECEPTIONIST ROLE
+// ════════════════════════════════════════
+function buildReceptionist(nav) {
+  nav.appendChild(navLabel('Front Desk'));
+  nav.appendChild(navItem('◈','Dashboard','r-dash',null,false,true));
+  nav.appendChild(navItem('📅','Appointments','r-appts'));
+  nav.appendChild(navItem('➕','Register Patient','r-reg'));
+  nav.appendChild(navItem('👥','Patient List','r-patients'));
+  ['r-dash','r-appts','r-reg','r-patients'].forEach(id=>{ const d=document.createElement('div'); d.className='page'; d.id=id; document.getElementById('main-content').appendChild(d); });
+  renderReceptDash(); renderReceptAppts(); renderReceptPatients();
+  document.getElementById('r-reg').innerHTML=`<div class="ptb"><div><h2>Register New Patient</h2></div></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>Registration Form</div></div><div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="fgl"><label>First Name *</label><input id="rr-fname" type="text" placeholder="First Name"/></div><div class="fgl"><label>Last Name *</label><input id="rr-lname" type="text" placeholder="Last Name"/></div><div class="fgl"><label>Age</label><input id="rr-age" type="number" placeholder="Age"/></div><div class="fgl"><label>Gender</label><select id="rr-gen"><option>Male</option><option>Female</option><option>Other</option></select></div><div class="fgl"><label>Phone</label><input id="rr-phone" type="tel" placeholder="+91…"/></div><div class="fgl"><label>Blood Group</label><select id="rr-blood"><option>A+</option><option>B+</option><option>O+</option><option>AB+</option><option>A-</option><option>B-</option><option>O-</option><option>AB-</option></select></div><div class="fgl"><label>Primary Complaint *</label><input id="rr-diag" type="text" placeholder="e.g. Chest pain"/></div><div class="fgl"><label>Referring Doctor</label><select id="rr-doc">${DB.doctors.map(d=>`<option>${d.name}</option>`).join('')}</select></div><div style="grid-column:span 2"><button class="btn btn-a" onclick="registerPatientFromDesk()">Register Patient</button></div></div></div>`;
+  document.getElementById('r-dash').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    const orig=item.onclick; item.onclick=function(){ orig&&orig.call(this); const id=document.querySelector('.page.active')?.id; if(id==='r-patients') renderReceptPatients(); if(id==='r-appts') renderReceptAppts(); };
+  });
+}
+function registerPatientFromDesk() {
+  const fname=document.getElementById('rr-fname').value.trim(), lname=document.getElementById('rr-lname').value.trim(), diag=document.getElementById('rr-diag').value.trim();
+  if(!fname||!lname||!diag){toast('⚠ Name and complaint are required');return;}
+  DB._patientCounter++;
+  const id='P-'+String(DB._patientCounter).padStart(3,'0');
+  DB.patients.push({ id, fname, lname, age:document.getElementById('rr-age').value||'—', gender:document.getElementById('rr-gen').value, phone:document.getElementById('rr-phone').value||'—', blood:document.getElementById('rr-blood').value, ward:'General', doctor:document.getElementById('rr-doc').value, diag, status:'Stable', admitted:today(), initials:makeInitials(fname,lname), color:randomColor() });
+  ['rr-fname','rr-lname','rr-age','rr-phone','rr-diag'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  toast(`✓ Patient ${id} (${fname} ${lname}) registered!`);
+}
+function renderReceptDash() {
+  document.getElementById('r-dash').innerHTML=`<div class="welcome-banner"><div class="wb-icon">👋</div><div class="wb-text"><h3>Welcome, Priya Sharma</h3><p>${DB.appointments.filter(a=>a.status==='Scheduled'||a.status==='Waiting').length} appointments pending · ${DB.patients.length} patients registered</p></div></div>
+<div class="kpi-grid four">
+  <div class="kpi-card" style="--kc:var(--gold)"><div class="kpi-top"><div class="kpi-icon">📅</div></div><div class="kpi-val">${DB.appointments.length}</div><div class="kpi-lbl">Total Appts</div></div>
+  <div class="kpi-card" style="--kc:var(--ruby)"><div class="kpi-top"><div class="kpi-icon">⏳</div></div><div class="kpi-val">${DB.appointments.filter(a=>a.status==='Waiting').length}</div><div class="kpi-lbl">Waiting</div></div>
+  <div class="kpi-card" style="--kc:var(--emerald)"><div class="kpi-top"><div class="kpi-icon">✅</div></div><div class="kpi-val">${DB.appointments.filter(a=>a.status==='Completed'||a.status==='Done').length}</div><div class="kpi-lbl">Completed</div></div>
+  <div class="kpi-card" style="--kc:var(--accent)"><div class="kpi-top"><div class="kpi-icon">🏥</div></div><div class="kpi-val">${DB.patients.length}</div><div class="kpi-lbl">Total Patients</div></div>
+</div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>Today's Queue</div><button class="btn btn-a btn-sm" onclick="openM('bookAppt')">+ Book</button></div>
+${renderApptTable(DB.appointments.slice(0,5))}</div>`;
+}
+function renderReceptAppts() {
+  document.getElementById('r-appts').innerHTML=`<div class="ptb"><div><h2>Appointments</h2></div><button class="btn btn-a" onclick="openM('bookAppt')">+ Book</button></div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>All Appointments</div><input class="iinp" type="text" placeholder="🔍 Search…" oninput="filterTable('ra-search','appt-tbody')" id="ra-search"/></div>${renderApptTable(DB.appointments)}</div>`;
+}
+function renderReceptPatients() {
+  document.getElementById('r-patients').innerHTML=`<div class="ptb"><div><h2>Patient List</h2><p>${DB.patients.length} patients</p></div></div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>Registry</div><input class="iinp" type="text" placeholder="🔍 Search…" oninput="filterTable('rp-search','pt-tbody')" id="rp-search"/></div>${renderPatientTable(DB.patients,['ID','Patient','Age/Sex','Ward','Doctor','Admitted','Status',''])}</div>`;
+}
+
+// ════════════════════════════════════════
+//  PHARMACIST ROLE
+// ════════════════════════════════════════
+function buildPharmacist(nav) {
+  nav.appendChild(navLabel('Pharmacy'));
+  nav.appendChild(navItem('◈','Dashboard','ph-dash',null,false,true));
+  nav.appendChild(navItem('💊','Inventory','ph-inv'));
+  nav.appendChild(navItem('📋','Prescriptions','ph-rx'));
+  nav.appendChild(navItem('📦','Supplier Orders','ph-orders'));
+  ['ph-dash','ph-inv','ph-rx','ph-orders'].forEach(id=>{ const d=document.createElement('div'); d.className='page'; d.id=id; document.getElementById('main-content').appendChild(d); });
+  renderPharmaDash(); renderPharmaInv();
+  document.getElementById('ph-rx').innerHTML=`<div class="ptb"><div><h2>Prescriptions</h2></div></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>Prescription Queue</div></div><table class="dt"><thead><tr><th>Rx No.</th><th>Patient</th><th>Doctor</th><th>Medicines</th><th>Status</th><th></th></tr></thead><tbody><tr><td class="mono">Rx-0841</td><td>Gopal Menon</td><td>Dr. Priya Rao</td><td>Levetiracetam, Clobazam</td><td>${statusBadge('Under Obs.')}</td><td><button class="btn btn-a btn-sm" onclick="toast('Dispensed!')">Dispense</button></td></tr><tr><td class="mono">Rx-0840</td><td>Aarav Patel</td><td>Dr. Meera Nair</td><td>Metformin, Amlodipine</td><td>${statusBadge('Stable')}</td><td><button class="btn btn-g btn-sm" onclick="toast('Viewed')">View</button></td></tr></tbody></table></div>`;
+  document.getElementById('ph-orders').innerHTML=`<div class="ptb"><div><h2>Supplier Orders</h2></div><button class="btn btn-a" onclick="toast('New PO form')">+ New Order</button></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--gold)"></div>Active Orders</div></div><table class="dt"><thead><tr><th>PO No.</th><th>Medicine</th><th>Supplier</th><th>Qty</th><th>Amount</th><th>ETA</th><th>Status</th></tr></thead><tbody><tr><td class="mono">PO-2041</td><td>Adrenaline Inj.</td><td>MedLine India</td><td class="mono">200 vials</td><td class="mono">₹48,000</td><td class="mono">14 Mar</td><td>${statusBadge('In Progress')}</td></tr><tr><td class="mono">PO-2042</td><td>Insulin (Rapid)</td><td>Novo Nordisk</td><td class="mono">500 vials</td><td class="mono">₹1,25,000</td><td class="mono">18 Mar</td><td>${statusBadge('Scheduled')}</td></tr></tbody></table></div>`;
+  document.getElementById('ph-dash').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    const orig=item.onclick; item.onclick=function(){ orig&&orig.call(this); const id=document.querySelector('.page.active')?.id; if(id==='ph-inv') renderPharmaInv(); };
+  });
+}
+function renderPharmaDash() {
+  const low=DB.medicines.filter(m=>m.status!=='In Stock');
+  document.getElementById('ph-dash').innerHTML=`<div class="welcome-banner"><div class="wb-icon">💊</div><div class="wb-text"><h3>Welcome, Rajan Iyer</h3><p>${DB.medicines.length} medicines tracked · ${low.length} low stock alerts</p></div></div>
+<div class="kpi-grid four">
+  <div class="kpi-card" style="--kc:var(--accent)"><div class="kpi-top"><div class="kpi-icon">💊</div></div><div class="kpi-val">${DB.medicines.length}</div><div class="kpi-lbl">Total SKUs</div></div>
+  <div class="kpi-card" style="--kc:var(--ruby)"><div class="kpi-top"><div class="kpi-icon">⚠️</div></div><div class="kpi-val">${low.length}</div><div class="kpi-lbl">Low / Critical</div></div>
+  <div class="kpi-card" style="--kc:var(--emerald)"><div class="kpi-top"><div class="kpi-icon">✅</div></div><div class="kpi-val">${DB.medicines.filter(m=>m.status==='In Stock').length}</div><div class="kpi-lbl">In Stock</div></div>
+  <div class="kpi-card" style="--kc:var(--gold)"><div class="kpi-top"><div class="kpi-icon">📦</div></div><div class="kpi-val">84</div><div class="kpi-lbl">Dispensed Today</div></div>
+</div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--ruby)"></div>Stock Alerts</div><button class="btn btn-a btn-sm" onclick="openM('addMed')">+ Add Medicine</button></div>
+${renderMedicineTable(low.length?low:DB.medicines.slice(0,3))}</div>`;
+}
+function renderPharmaInv() {
+  document.getElementById('ph-inv').innerHTML=`<div class="ptb"><div><h2>Inventory</h2><p>${DB.medicines.length} items</p></div><button class="btn btn-a" onclick="openM('addMed')">+ Add Medicine</button></div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd"></div>All Medicines</div><input class="iinp" type="text" placeholder="🔍 Search…" oninput="filterTable('pi-search','med-tbody')" id="pi-search"/></div>${renderMedicineTable(DB.medicines)}</div>`;
+}
+
+// ════════════════════════════════════════
+//  FINANCE ROLE
+// ════════════════════════════════════════
+function buildFinance(nav) {
+  nav.appendChild(navLabel('Finance'));
+  nav.appendChild(navItem('◈','Dashboard','f-dash',null,false,true));
+  nav.appendChild(navItem('💳','Invoices','f-inv'));
+  nav.appendChild(navItem('📊','Revenue Reports','f-rev'));
+  nav.appendChild(navItem('📋','Insurance Claims','f-ins'));
+  ['f-dash','f-inv','f-rev','f-ins'].forEach(id=>{ const d=document.createElement('div'); d.className='page'; d.id=id; document.getElementById('main-content').appendChild(d); });
+  renderFinanceDash(); renderFinanceInvoices();
+  document.getElementById('f-rev').innerHTML=`<div class="ptb"><div><h2>Revenue Reports</h2></div></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--emerald)"></div>Revenue by Department</div></div><div style="padding:14px 20px"><div class="dr"><div class="dn">Cardiology</div><div class="dw"><div class="df" style="width:82%;background:var(--accent)"></div></div><div class="dv">₹4.8L</div></div><div class="dr"><div class="dn">Orthopaedics</div><div class="dw"><div class="df" style="width:61%;background:var(--sapphire)"></div></div><div class="dv">₹3.6L</div></div><div class="dr"><div class="dn">Neurology</div><div class="dw"><div class="df" style="width:53%;background:var(--violet)"></div></div><div class="dv">₹3.1L</div></div><div class="dr"><div class="dn">Oncology</div><div class="dw"><div class="df" style="width:49%;background:var(--gold)"></div></div><div class="dv">₹2.9L</div></div></div></div>`;
+  document.getElementById('f-ins').innerHTML=`<div class="ptb"><div><h2>Insurance Claims</h2></div><button class="btn btn-a" onclick="toast('New claim filed')">+ File Claim</button></div><div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--violet)"></div>Claims</div></div><table class="dt"><thead><tr><th>Claim No.</th><th>Patient</th><th>Insurer</th><th>Amount</th><th>Filed</th><th>Status</th></tr></thead><tbody><tr><td class="mono">CLM-0881</td><td>Sunita Reddy</td><td>Star Health</td><td class="mono">₹1,12,000</td><td class="mono">11 Mar</td><td>${statusBadge('Under Obs.')}</td></tr><tr><td class="mono">CLM-0880</td><td>Vikram Singh</td><td>HDFC Ergo</td><td class="mono">₹76,400</td><td class="mono">09 Mar</td><td>${statusBadge('Under Obs.')}</td></tr></tbody></table></div>`;
+  document.getElementById('f-dash').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    const orig=item.onclick; item.onclick=function(){ orig&&orig.call(this); const id=document.querySelector('.page.active')?.id; if(id==='f-inv') renderFinanceInvoices(); };
+  });
+}
+function renderFinanceDash() {
+  const paid=DB.invoices.filter(i=>i.status==='Paid').reduce((s,i)=>s+i.amount,0);
+  const total=DB.invoices.reduce((s,i)=>s+i.amount,0);
+  document.getElementById('f-dash').innerHTML=`<div class="welcome-banner"><div class="wb-icon">💳</div><div class="wb-text"><h3>Welcome, Kavitha Das</h3><p>${fmtCurrency(total)} total billed · ${fmtCurrency(paid)} collected · ${DB.invoices.filter(i=>i.status!=='Paid').length} pending invoices</p></div></div>
+<div class="bb-bar">
+  <div class="bc" style="--cc:var(--accent)"><div class="bc-lbl">Total Billed</div><div class="bc-val">${fmtCurrency(total)}</div><div class="bc-sub">${DB.invoices.length} invoices</div></div>
+  <div class="bc" style="--cc:var(--emerald)"><div class="bc-lbl">Collected</div><div class="bc-val">${fmtCurrency(paid)}</div><div class="bc-sub">${total?Math.round(paid/total*100):0}% collection rate</div></div>
+  <div class="bc" style="--cc:var(--ruby)"><div class="bc-lbl">Outstanding</div><div class="bc-val">${fmtCurrency(total-paid)}</div><div class="bc-sub">${DB.invoices.filter(i=>i.status!=='Paid').length} pending</div></div>
+</div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--gold)"></div>Recent Invoices</div><button class="btn btn-a btn-sm" onclick="openM('addBill')">+ Create</button></div>${renderInvoiceTable(DB.invoices.slice(0,5))}</div>`;
+}
+function renderFinanceInvoices() {
+  const paid=DB.invoices.filter(i=>i.status==='Paid').reduce((s,i)=>s+i.amount,0);
+  const total=DB.invoices.reduce((s,i)=>s+i.amount,0);
+  document.getElementById('f-inv').innerHTML=`<div class="ptb"><div><h2>Invoices</h2><p>${DB.invoices.length} total · ${fmtCurrency(total)} billed</p></div><button class="btn btn-a" onclick="openM('addBill')">+ Create Invoice</button></div>
+<div class="panel"><div class="ph"><div class="pt"><div class="ptd" style="background:var(--gold)"></div>Invoice Register</div>
+<div class="pa"><select class="isel" id="fi-filter" onchange="filterFinanceInvoices()"><option value="">All</option><option>Paid</option><option>Partial</option><option>Pending</option></select><input class="iinp" type="text" placeholder="🔍 Search…" oninput="filterTable('fi-search','inv-tbody')" id="fi-search"/></div></div>
+<div id="finance-inv-wrap">${renderInvoiceTable(DB.invoices)}</div></div>`;
+}
+function filterFinanceInvoices() {
+  const s=document.getElementById('fi-filter').value;
+  document.getElementById('finance-inv-wrap').innerHTML=renderInvoiceTable(s?DB.invoices.filter(i=>i.status===s):DB.invoices);
+}
+
+// ════════════════════════════════════════
+//  MODAL HELPERS
+// ════════════════════════════════════════
+function openM(id){ document.getElementById('m-'+id).classList.add('open'); }
+function closeM(id){ document.getElementById('m-'+id).classList.remove('open'); }
+document.querySelectorAll('.mb').forEach(b=>b.addEventListener('click',e=>{ if(e.target===b) b.classList.remove('open'); }));
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.innerHTML=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>
